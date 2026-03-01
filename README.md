@@ -1,1 +1,5 @@
-# software_documentation_and_design_patterns
+Software documentation
+
+Документування програмного забезпечення та шаблони проєктування
+Варіант 8
+Дячок Микола ІР-33
