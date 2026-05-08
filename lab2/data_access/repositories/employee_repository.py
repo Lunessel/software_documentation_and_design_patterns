@@ -30,6 +30,19 @@ class EmployeeRepository(IEmployeeRepository):
     def exists(self, employee_id: str) -> bool:
         return self._session.get(EmployeeORM, employee_id) is not None
 
+    def update(self, employee: Employee) -> None:
+        orm = self._session.get(EmployeeORM, employee.employee_id)
+        if orm:
+            orm.name = employee.name
+            orm.position = employee.position
+            self._session.commit()
+
+    def delete(self, employee_id: str) -> None:
+        orm = self._session.get(EmployeeORM, employee_id)
+        if orm:
+            self._session.delete(orm)
+            self._session.commit()
+
     def _to_orm(self, emp: Employee) -> EmployeeORM:
         return EmployeeORM(
             employee_id=emp.employee_id,

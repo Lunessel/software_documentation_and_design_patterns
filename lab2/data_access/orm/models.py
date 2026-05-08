@@ -13,7 +13,7 @@ class EmployeeORM(Base):
     name = Column(String, nullable=False)
     position = Column(String, nullable=False)
 
-    compensations = relationship("CompensationORM", back_populates="employee")
+    compensations = relationship("CompensationORM", back_populates="employee", cascade="all, delete-orphan")
 
 
 class CompensationPlanORM(Base):

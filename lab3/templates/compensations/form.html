@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/compensations">Compensations</a></li>
+    <li class="breadcrumb-item active">{{ title }}</li>
+  </ol>
+</nav>
+
+<div class="card" style="max-width: 620px;">
+  <div class="card-header"><h5 class="mb-0">{{ title }}</h5></div>
+  <div class="card-body">
+    {% set is_edit = compensation is not none %}
+    {% set cur_type = compensation.__class__.__name__ if is_edit else "" %}
+
+    {% if is_edit %}
+    <form method="post" action="/compensations/{{ compensation.compensation_id }}/edit">
+    {% else %}
+    <form method="post" action="/compensations">
+    {% endif %}
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Type</label>
+        <select name="compensation_type" id="comp_type" class="form-select" required>
+          {% for t in comp_types %}
+          <option value="{{ t }}"
+            {% if is_edit and cur_type == t + "Compensation" %}selected
+            {% elif not is_edit and loop.first %}selected{% endif %}>
+            {{ t }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col">
+          <label class="form-label fw-semibold">Employee</label>
+          <select name="employee_id" class="form-select" required>
+            {% for emp in employees %}
+            <option value="{{ emp.employee_id }}"
+              {% if is_edit and compensation.employee_id == emp.employee_id %}selected
+              {% elif not is_edit and preselect_employee == emp.employee_id %}selected{% endif %}>
+              {{ emp.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col">
+          <label class="form-label fw-semibold">Plan (optional)</label>
+          <select name="plan_id" class="form-select">
+            <option value="">— None —</option>
+            {% for plan in plans %}
+            <option value="{{ plan.plan_id }}"
+              {% if is_edit and compensation.plan_id == plan.plan_id %}selected{% endif %}>
+              {{ plan.plan_name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col">
+          <label class="form-label fw-semibold">Currency</label>
+          <select name="currency" class="form-select" required>
+            {% for cur in currencies %}
+            <option value="{{ cur }}"
+              {% if is_edit and compensation.currency == cur %}selected{% endif %}>
+              {{ cur }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col">
+          <label class="form-label fw-semibold">Effective Date</label>
+          <input type="date" name="effective_date" class="form-control"
+                 value="{{ compensation.effective_date.isoformat() if is_edit else '' }}" required>
+        </div>
+      </div>
+
+      <!-- SALARY fields -->
+      <div id="salary-fields">
+        <div class="row mb-3">
+          <div class="col">
+            <label class="form-label fw-semibold">Annual Salary</label>
+            <input type="number" step="0.01" name="annual_salary" class="form-control"
+                   value="{{ compensation.annual_salary if is_edit and cur_type == 'SalaryCompensation' else '' }}">
+          </div>
+          <div class="col">
+            <label class="form-label fw-semibold">Pay Frequency</label>
+            <select name="pay_frequency" class="form-select">
+              {% for freq in pay_frequencies %}
+              <option value="{{ freq }}"
+                {% if is_edit and cur_type == "SalaryCompensation" and compensation.pay_frequency.value == freq %}selected{% endif %}>
+                {{ freq }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOURLY fields -->
+      <div id="hourly-fields">
+        <div class="row mb-3">
+          <div class="col">
+            <label class="form-label fw-semibold">Hourly Rate</label>
+            <input type="number" step="0.01" name="hourly_rate" class="form-control"
+                   value="{{ compensation.hourly_rate if is_edit and cur_type == 'HourlyCompensation' else '' }}">
+          </div>
+          <div class="col">
+            <label class="form-label fw-semibold">Hours Worked</label>
+            <input type="number" step="0.1" name="hours_worked" class="form-control"
+                   value="{{ compensation.hours_worked if is_edit and cur_type == 'HourlyCompensation' else '' }}">
+          </div>
+        </div>
+      </div>
+
+      <!-- BONUS fields -->
+      <div id="bonus-fields">
+        <div class="row mb-3">
+          <div class="col">
+            <label class="form-label fw-semibold">Bonus Amount</label>
+            <input type="number" step="0.01" name="bonus_amount" class="form-control"
+                   value="{{ compensation.bonus_amount if is_edit and cur_type == 'BonusCompensation' else '' }}">
+          </div>
+          <div class="col">
+            <label class="form-label fw-semibold">Trigger Criteria</label>
+            <input type="text" name="trigger_criteria" class="form-control"
+                   value="{{ compensation.trigger_criteria if is_edit and cur_type == 'BonusCompensation' else '' }}">
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-2">
+        <button type="submit" class="btn btn-primary">
+          {% if is_edit %}<i class="bi bi-save"></i> Save{% else %}<i class="bi bi-plus-lg"></i> Create{% endif %}
+        </button>
+        <a href="/compensations" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const select = document.getElementById('comp_type');
+  function update() {
+    const t = select.value;
+    document.getElementById('salary-fields').style.display = t === 'SALARY' ? '' : 'none';
+    document.getElementById('hourly-fields').style.display = t === 'HOURLY' ? '' : 'none';
+    document.getElementById('bonus-fields').style.display  = t === 'BONUS'  ? '' : 'none';
+  }
+  select.addEventListener('change', update);
+  update();
+</script>
+{% endblock %}

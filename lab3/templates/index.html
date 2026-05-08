@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Compensation Manager{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Dashboard</h1>
+
+<div class="row g-4 mb-5">
+  <div class="col-md-4">
+    <div class="card text-white bg-primary h-100">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-people-fill"></i> Employees</h5>
+        <p class="display-4 fw-bold">{{ employee_count }}</p>
+        <a href="/employees" class="btn btn-light btn-sm">View all</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card text-white bg-success h-100">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-file-earmark-text-fill"></i> Compensations</h5>
+        <p class="display-4 fw-bold">{{ compensation_count }}</p>
+        <a href="/compensations" class="btn btn-light btn-sm">View all</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card text-white bg-warning h-100">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-cash-stack"></i> Total Cost</h5>
+        <p class="display-6 fw-bold">{{ "{:,.2f}".format(total_cost) }}</p>
+        <small>across all compensations</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h4>Recent Employees</h4>
+<table class="table table-hover">
+  <thead class="table-dark">
+    <tr><th>Name</th><th>Position</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for emp in recent_employees %}
+    <tr>
+      <td>{{ emp.name }}</td>
+      <td>{{ emp.position }}</td>
+      <td><a href="/employees/{{ emp.employee_id }}" class="btn btn-sm btn-outline-primary">View</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<a href="/employees" class="btn btn-outline-secondary btn-sm">All employees &rarr;</a>
+{% endblock %}

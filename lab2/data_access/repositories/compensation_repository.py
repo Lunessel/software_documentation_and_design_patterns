@@ -25,6 +25,45 @@ class CompensationRepository(ICompensationRepository):
     def get_all(self) -> list[Compensation]:
         return [self._to_domain(o) for o in self._session.query(CompensationORM).all()]
 
+    def get_by_id(self, compensation_id: str) -> Compensation | None:
+        orm = self._session.get(CompensationORM, compensation_id)
+        return self._to_domain(orm) if orm else None
+
+    def get_by_employee_id(self, employee_id: str) -> list[Compensation]:
+        orms = self._session.query(CompensationORM).filter_by(employee_id=employee_id).all()
+        return [self._to_domain(o) for o in orms]
+
+    def update(self, compensation: Compensation) -> None:
+        orm = self._session.get(CompensationORM, compensation.compensation_id)
+        if not orm:
+            return
+        orm.currency = compensation.currency
+        orm.effective_date = compensation.effective_date
+        orm.employee_id = compensation.employee_id
+        orm.plan_id = compensation.plan_id
+        orm.annual_salary = orm.pay_frequency = None
+        orm.hourly_rate = orm.hours_worked = None
+        orm.bonus_amount = orm.trigger_criteria = None
+        if isinstance(compensation, SalaryCompensation):
+            orm.compensation_type = "SALARY"
+            orm.annual_salary = compensation.annual_salary
+            orm.pay_frequency = compensation.pay_frequency.value
+        elif isinstance(compensation, HourlyCompensation):
+            orm.compensation_type = "HOURLY"
+            orm.hourly_rate = compensation.hourly_rate
+            orm.hours_worked = compensation.hours_worked
+        elif isinstance(compensation, BonusCompensation):
+            orm.compensation_type = "BONUS"
+            orm.bonus_amount = compensation.bonus_amount
+            orm.trigger_criteria = compensation.trigger_criteria
+        self._session.commit()
+
+    def delete(self, compensation_id: str) -> None:
+        orm = self._session.get(CompensationORM, compensation_id)
+        if orm:
+            self._session.delete(orm)
+            self._session.commit()
+
     def _to_orm(self, comp: Compensation) -> CompensationORM:
         orm = CompensationORM(
             compensation_id=comp.compensation_id,
