@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/employees">Employees</a></li>
+    <li class="breadcrumb-item active">{{ title }}</li>
+  </ol>
+</nav>
+
+<div class="card" style="max-width: 500px;">
+  <div class="card-header"><h5 class="mb-0">{{ title }}</h5></div>
+  <div class="card-body">
+    {% if employee %}
+    <form method="post" action="/employees/{{ employee.employee_id }}/edit">
+    {% else %}
+    <form method="post" action="/employees">
+    {% endif %}
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Full Name</label>
+        <input type="text" name="name" class="form-control"
+               value="{{ employee.name if employee else '' }}" required>
+      </div>
+      <div class="mb-4">
+        <label class="form-label fw-semibold">Position</label>
+        <input type="text" name="position" class="form-control"
+               value="{{ employee.position if employee else '' }}" required>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+          {% if employee %}<i class="bi bi-save"></i> Save{% else %}<i class="bi bi-plus-lg"></i> Create{% endif %}
+        </button>
+        <a href="/employees{% if employee %}/{{ employee.employee_id }}{% endif %}" class="btn btn-outline-secondary">
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

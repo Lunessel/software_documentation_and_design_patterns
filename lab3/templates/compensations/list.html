@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Compensations{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1>Compensations</h1>
+  <a href="/compensations/new" class="btn btn-primary">
+    <i class="bi bi-plus-lg"></i> Add Compensation
+  </a>
+</div>
+
+<form method="get" class="mb-3 d-flex gap-2" style="max-width: 400px;">
+  <select name="employee_id" class="form-select">
+    <option value="">— All Employees —</option>
+    {% for emp in employees %}
+    <option value="{{ emp.employee_id }}" {% if filter_employee == emp.employee_id %}selected{% endif %}>
+      {{ emp.name }}
+    </option>
+    {% endfor %}
+  </select>
+  <button class="btn btn-outline-secondary">Filter</button>
+  {% if filter_employee %}
+  <a href="/compensations" class="btn btn-outline-danger">Clear</a>
+  {% endif %}
+</form>
+
+<table class="table table-hover align-middle">
+  <thead class="table-dark">
+    <tr>
+      <th>Type</th>
+      <th>Employee</th>
+      <th>Currency</th>
+      <th>Effective Date</th>
+      <th class="text-end">Amount</th>
+      <th class="text-end">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for comp in compensations %}
+    <tr>
+      <td>
+        {% set t = comp.__class__.__name__ %}
+        {% if t == "SalaryCompensation" %}
+          <span class="badge bg-primary">SALARY</span>
+        {% elif t == "HourlyCompensation" %}
+          <span class="badge bg-info text-dark">HOURLY</span>
+        {% else %}
+          <span class="badge bg-success">BONUS</span>
+        {% endif %}
+      </td>
+      <td>
+        <a href="/employees/{{ comp.employee_id }}">{{ emp_map.get(comp.employee_id, comp.employee_id) }}</a>
+      </td>
+      <td>{{ comp.currency }}</td>
+      <td>{{ comp.effective_date }}</td>
+      <td class="text-end fw-bold">{{ "{:,.2f}".format(comp.calculate()) }}</td>
+      <td class="text-end">
+        <a href="/compensations/{{ comp.compensation_id }}/edit" class="btn btn-sm btn-outline-warning">
+          <i class="bi bi-pencil"></i>
+        </a>
+        <form method="post" action="/compensations/{{ comp.compensation_id }}/delete"
+              class="d-inline" onsubmit="return confirm('Delete this compensation?')">
+          <input type="hidden" name="employee_id" value="{{ comp.employee_id }}">
+          <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="text-center text-muted">No compensations found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

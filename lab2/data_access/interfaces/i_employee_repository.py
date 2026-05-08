@@ -21,3 +21,9 @@ class IEmployeeRepository(ABC):
 
     @abstractmethod
     def exists(self, employee_id: str) -> bool: ...
+
+    @abstractmethod
+    def update(self, employee: Employee) -> None: ...
+
+    @abstractmethod
+    def delete(self, employee_id: str) -> None: ...
